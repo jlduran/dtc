@@ -41,7 +41,8 @@
 namespace dtc
 {
 
-namespace {
+namespace
+{
 struct expression;
 typedef std::unique_ptr<expression> expression_ptr;
 }
@@ -59,17 +60,19 @@ typedef std::unique_ptr<expression> expression_ptr;
 class input_buffer
 {
 	friend class text_input_buffer;
-	protected:
+
+      protected:
 	/**
 	 * The buffer.  This class doesn't own the buffer, but the
 	 * mmap_input_buffer subclass does.
 	 */
-	const char* buffer;
+	const char *buffer;
 	/**
 	 * The size of the buffer.
 	 */
 	int size;
-	private:
+
+      private:
 	/**
 	 * The current place in the buffer where we are reading.  This class
 	 * keeps a separate size, pointer, and cursor so that we can move
@@ -81,19 +84,19 @@ class input_buffer
 	 * Private constructor.  This is used to create input buffers that
 	 * refer to the same memory, but have different cursors.
 	 */
-	input_buffer(const char* b, int s, int c) : buffer(b), size(s),
-		cursor(c) {}
-	public:
+	input_buffer(const char *b, int s, int c) : buffer(b), size(s), cursor(c) {}
+
+      public:
 	/**
 	 * Returns the file name associated with this buffer.
 	 */
-	virtual const std::string &filename() const
+	virtual const std::string &
+	filename() const
 	{
 		static std::string s;
 		return s;
 	}
-	static std::unique_ptr<input_buffer> buffer_for_file(const std::string &path,
-	                                                     bool warn=true);
+	static std::unique_ptr<input_buffer> buffer_for_file(const std::string &path, bool warn = true);
 	/**
 	 * Skips all characters in the input until the specified character is
 	 * encountered.
@@ -107,7 +110,11 @@ class input_buffer
 	/**
 	 * Return whether all input has been consumed.
 	 */
-	bool finished() { return cursor >= size; }
+	bool
+	finished()
+	{
+		return cursor >= size;
+	}
 	/**
 	 * Virtual destructor.  Does nothing, but exists so that subclasses
 	 * that own the memory can run cleanup code for deallocating it.
@@ -120,7 +127,7 @@ class input_buffer
 	/**
 	 * Constructs a new buffer with a specified memory region and size.
 	 */
-	input_buffer(const char* b, int s) : buffer(b), size(s), cursor(0){}
+	input_buffer(const char *b, int s) : buffer(b), size(s), cursor(0) {}
 	/**
 	 * Returns a new input buffer referring into this input, clamped to the
 	 * specified size.  If the requested buffer would fall outside the
@@ -131,16 +138,23 @@ class input_buffer
 	 * sections of a device tree blob.  Requesting a size of 0 will give a
 	 * buffer that extends to the end of the available memory.
 	 */
-	input_buffer buffer_from_offset(int offset, int s=0);
+	input_buffer buffer_from_offset(int offset, int s = 0);
 	/**
 	 * Dereferencing operator, allows the buffer to be treated as a char*
 	 * and dereferenced to give a character.  This returns a null byte if
 	 * the cursor is out of range.
 	 */
-	inline char operator*()
+	inline char
+	operator*()
 	{
-		if (cursor >= size) { return '\0'; }
-		if (cursor < 0) { return '\0'; }
+		if (cursor >= size)
+		{
+			return '\0';
+		}
+		if (cursor < 0)
+		{
+			return '\0';
+		}
 		return buffer[cursor];
 	}
 	/**
@@ -150,25 +164,35 @@ class input_buffer
 	 * cursor plus offset is outside of the range, this returns a nul
 	 * byte.
 	 */
-	inline char operator[](int offset)
+	inline char
+	operator[](int offset)
 	{
-		if (cursor + offset >= size) { return '\0'; }
-		if (cursor + offset < 0) { return '\0'; }
+		if (cursor + offset >= size)
+		{
+			return '\0';
+		}
+		if (cursor + offset < 0)
+		{
+			return '\0';
+		}
 		return buffer[cursor + offset];
 	}
 	/**
 	 * Increments the cursor, iterating forward in the buffer.
 	 */
-	inline input_buffer &operator++()
+	inline input_buffer &
+	operator++()
 	{
-		cursor++; 
+		cursor++;
 		return *this;
 	}
-	const char *begin()
+	const char *
+	begin()
 	{
 		return buffer;
 	}
-	const char *end()
+	const char *
+	end()
 	{
 		return buffer + size;
 	}
@@ -177,9 +201,10 @@ class input_buffer
 	 * next character matches the argument, returning true.  If the current
 	 * character does not match the argument, returns false.
 	 */
-	inline bool consume(char c)
+	inline bool
+	consume(char c)
 	{
-		if (*(*this) == c) 
+		if (*(*this) == c)
 		{
 			++(*this);
 			return true;
@@ -227,8 +252,9 @@ class input_buffer
 	 * all values must be natively aligned, and so advances the cursor to
 	 * the correct alignment before reading.
 	 */
-	template<typename T>
-	bool consume_binary(T &out)
+	template <typename T>
+	bool
+	consume_binary(T &out)
 	{
 		int align = 0;
 		int type_size = sizeof(T);
@@ -243,7 +269,7 @@ class input_buffer
 		cursor += align;
 		assert(cursor % type_size == 0);
 		out = 0;
-		for (int i=0 ; i<type_size ; ++i)
+		for (int i = 0; i < type_size; ++i)
 		{
 			if (size < cursor)
 			{
@@ -266,8 +292,9 @@ class input_buffer
 /**
  * Explicit specialisation for reading a single byte.
  */
-template<>
-inline bool input_buffer::consume_binary(uint8_t &out)
+template <>
+inline bool
+input_buffer::consume_binary(uint8_t &out)
 {
 	if (size < cursor + 1)
 	{
@@ -321,18 +348,16 @@ class text_input_buffer
 	 * The file where dependencies should be output.
 	 */
 	FILE *depfile;
-	public:
+
+      public:
 	/**
 	 * Construct a new text input buffer with the specified buffer as the start
 	 * of parsing and the specified set of input paths for handling new
 	 * inclusions.
 	 */
-	text_input_buffer(std::unique_ptr<input_buffer> &&b,
-	                  std::unordered_set<std::string> &&d,
-	                  std::vector<std::string> &&i,
-	                  const std::string directory,
-	                  FILE *deps)
-		: defines(d), include_paths(i), dir(directory), depfile(deps)
+	text_input_buffer(std::unique_ptr<input_buffer> &&b, std::unordered_set<std::string> &&d,
+	    std::vector<std::string> &&i, const std::string directory, FILE *deps) :
+	    defines(d), include_paths(i), dir(directory), depfile(deps)
 	{
 		input_stack.push(std::move(b));
 	}
@@ -347,7 +372,7 @@ class text_input_buffer
 	 * left-hand side of a binary expression and try to parse the right-hand
 	 * side.
 	 */
-	expression_ptr parse_expression(bool stopAtParen=false);
+	expression_ptr parse_expression(bool stopAtParen = false);
 	/**
 	 * Parse a binary expression, having already parsed the right-hand side.
 	 */
@@ -355,15 +380,16 @@ class text_input_buffer
 	/**
 	 * Return whether all input has been consumed.
 	 */
-	bool finished()
+	bool
+	finished()
 	{
-		return input_stack.empty() ||
-			((input_stack.size() == 1) && input_stack.top()->finished());
+		return input_stack.empty() || ((input_stack.size() == 1) && input_stack.top()->finished());
 	}
 	/**
 	 * Dereferencing operator.  Returns the current character in the top input buffer.
 	 */
-	inline char operator*()
+	inline char
+	operator*()
 	{
 		if (input_stack.empty())
 		{
@@ -374,7 +400,8 @@ class text_input_buffer
 	/**
 	 * Increments the cursor, iterating forward in the buffer.
 	 */
-	inline text_input_buffer &operator++()
+	inline text_input_buffer &
+	operator++()
 	{
 		if (input_stack.empty())
 		{
@@ -394,7 +421,8 @@ class text_input_buffer
 	 * next character matches the argument, returning true.  If the current
 	 * character does not match the argument, returns false.
 	 */
-	inline bool consume(char c)
+	inline bool
+	consume(char c)
 	{
 		if (*(*this) == c)
 		{
@@ -411,7 +439,8 @@ class text_input_buffer
 	 *
 	 * This method does not scan between files.
 	 */
-	bool consume(const char *str)
+	bool
+	consume(const char *str)
 	{
 		if (input_stack.empty())
 		{
@@ -426,7 +455,8 @@ class text_input_buffer
 	 *
 	 * This method does not scan between files.
 	 */
-	bool consume_char_literal(unsigned long long &outInt)
+	bool
+	consume_char_literal(unsigned long long &outInt)
 	{
 		if (input_stack.empty())
 		{
@@ -443,7 +473,8 @@ class text_input_buffer
 	 *
 	 * This method does not scan between files.
 	 */
-	bool consume_integer(unsigned long long &outInt)
+	bool
+	consume_integer(unsigned long long &outInt)
 	{
 		if (input_stack.empty())
 		{
@@ -464,7 +495,8 @@ class text_input_buffer
 	 *
 	 * This method does not scan between files.
 	 */
-	bool consume_hex_byte(uint8_t &outByte)
+	bool
+	consume_hex_byte(uint8_t &outByte)
 	{
 		if (input_stack.empty())
 		{
@@ -476,7 +508,7 @@ class text_input_buffer
 	 * Returns the longest string in the input buffer starting at the
 	 * current cursor and composed entirely of characters that are valid in
 	 * node names.
-	*/
+	 */
 	std::string parse_node_name();
 	/**
 	 * Returns the longest string in the input buffer starting at the
@@ -522,15 +554,17 @@ class text_input_buffer
 		 * The offset within the current buffer of the source location.
 		 */
 		int cursor;
-		source_location(text_input_buffer &buf)
-			: buffer(buf),
-			  b(buf.input_stack.empty() ? nullptr : buf.input_stack.top()),
-			  cursor(b ? b->cursor : 0) {}
-		public:
+		source_location(text_input_buffer &buf) :
+		    buffer(buf), b(buf.input_stack.empty() ? nullptr : buf.input_stack.top()), cursor(b ? b->cursor : 0)
+		{
+		}
+
+	      public:
 		/**
 		 * Report an error at this location.
 		 */
-		void report_error(const char *msg)
+		void
+		report_error(const char *msg)
 		{
 			if (b)
 			{
@@ -545,7 +579,8 @@ class text_input_buffer
 	/**
 	 * Returns the current source location.
 	 */
-	source_location location()
+	source_location
+	location()
 	{
 		return { *this };
 	}
@@ -560,7 +595,8 @@ class text_input_buffer
 	 * Returns true if the file exists and can be read, false otherwise.
 	 */
 	bool read_binary_file(const std::string &filename, byte_buffer &b);
-	private:
+
+      private:
 	/**
 	 * Prints a message indicating the location of a parse error, given a
 	 * specified location.  This is used when input has already moved beyond

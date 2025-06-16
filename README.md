@@ -1,5 +1,4 @@
-BSD Device Tree Compiler
-========================
+# BSD Device Tree Compiler
 
 Linux and macOS CI: [![Build Status](https://dev.azure.com/davidchisnall/dtc/_apis/build/status/davidchisnall.dtc?branchName=master)](https://dev.azure.com/davidchisnall/dtc/_build/latest?definitionId=1&branchName=master)
 

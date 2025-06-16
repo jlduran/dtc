@@ -67,44 +67,45 @@ enum token_type
 	 */
 	FDT_BEGIN_NODE = 0x00000001,
 	/**
-	 * Marker indicating the end of a node.  
+	 * Marker indicating the end of a node.
 	 */
-	FDT_END_NODE   = 0x00000002,
+	FDT_END_NODE = 0x00000002,
 	/**
 	 * The start of a property.  This is followed by two 32-bit big-endian
 	 * values.  The first indicates the length of the property value, the
 	 * second its index in the strings table.  It is then followed by the
 	 * property value, if the value is of non-zero length.
 	 */
-	FDT_PROP       = 0x00000003,
+	FDT_PROP = 0x00000003,
 	/**
 	 * Ignored token.  May be used for padding inside DTB nodes.
 	 */
-	FDT_NOP        = 0x00000004,
+	FDT_NOP = 0x00000004,
 	/**
 	 * Marker indicating the end of the tree.
 	 */
-	FDT_END        = 0x00000009
+	FDT_END = 0x00000009
 };
 
 /**
  * Returns the token as a string.  This is used for debugging and for printing
  * human-friendly error messages about malformed DTB input.
  */
-inline const char *token_type_name(token_type t)
+inline const char *
+token_type_name(token_type t)
 {
-	switch(t)
+	switch (t)
 	{
-		case FDT_BEGIN_NODE:
-			return "FDT_BEGIN_NODE";
-		case FDT_END_NODE:
-			return "FDT_END_NODE";
-		case FDT_PROP:
-			return "FDT_PROP";
-		case FDT_NOP:
-			return "FDT_NOP";
-		case FDT_END:
-			return "FDT_END";
+	case FDT_BEGIN_NODE:
+		return "FDT_BEGIN_NODE";
+	case FDT_END_NODE:
+		return "FDT_END_NODE";
+	case FDT_PROP:
+		return "FDT_PROP";
+	case FDT_NOP:
+		return "FDT_NOP";
+	case FDT_END:
+		return "FDT_END";
 	}
 	assert(0);
 	// Not reached.
@@ -126,7 +127,7 @@ struct output_writer
 	 * assembly output, where the labels become symbols that can be
 	 * resolved at link time.
 	 */
-	virtual void write_label(const std::string &name)   = 0;
+	virtual void write_label(const std::string &name) = 0;
 	/**
 	 * Writes a comment into the output stream.  Useful only when debugging
 	 * the output.
@@ -135,35 +136,36 @@ struct output_writer
 	/**
 	 * Writes a string.  A nul terminator is implicitly added.
 	 */
-	virtual void write_string(const std::string &name)  = 0;
+	virtual void write_string(const std::string &name) = 0;
 	/**
 	 * Writes a single 8-bit value.
 	 */
-	virtual void write_data(uint8_t)        = 0;
+	virtual void write_data(uint8_t) = 0;
 	/**
 	 * Writes a single 32-bit value.  The value is written in big-endian
 	 * format, but should be passed in the host's native endian.
 	 */
-	virtual void write_data(uint32_t)       = 0;
+	virtual void write_data(uint32_t) = 0;
 	/**
 	 * Writes a single 64-bit value.  The value is written in big-endian
 	 * format, but should be passed in the host's native endian.
 	 */
-	virtual void write_data(uint64_t)       = 0;
+	virtual void write_data(uint64_t) = 0;
 	/**
 	 * Writes the collected output to the specified file descriptor.
 	 */
-	virtual void write_to_file(int fd)      = 0;
+	virtual void write_to_file(int fd) = 0;
 	/**
 	 * Returns the number of bytes.
 	 */
-	virtual uint32_t size()                 = 0;
+	virtual uint32_t size() = 0;
 	/**
 	 * Helper for writing tokens to the output stream.  This writes a
 	 * comment above the token describing its value, for easier debugging
 	 * of the output.
 	 */
-	inline void write_token(token_type t)
+	inline void
+	write_token(token_type t)
 	{
 		write_comment(token_type_name(t));
 		write_data((uint32_t)t);
@@ -186,16 +188,23 @@ class binary_writer : public output_writer
 	 * constructed.
 	 */
 	byte_buffer buffer;
-	public:
+
+      public:
 	/**
 	 *  The binary format does not support labels, so this method
 	 * does nothing.
 	 */
-	void write_label(const std::string &) override {}
+	void
+	write_label(const std::string &) override
+	{
+	}
 	/**
 	 * Comments are ignored by the binary writer.
 	 */
-	void write_comment(const std::string&)  override {}
+	void
+	write_comment(const std::string &) override
+	{
+	}
 	void write_string(const std::string &name) override;
 	void write_data(uint8_t v) override;
 	void write_data(uint32_t v) override;
@@ -238,7 +247,7 @@ class asm_writer : public output_writer
 	 */
 	void write_string(const std::string &c) override;
 	/**
-	 * Writes the string, starting on a new line.  
+	 * Writes the string, starting on a new line.
 	 */
 	void write_line(const char *c);
 	/**
@@ -246,7 +255,8 @@ class asm_writer : public output_writer
 	 * directive, with up to four per line.
 	 */
 	void write_byte(uint8_t b);
-	public:
+
+      public:
 	asm_writer() : byte_count(0), bytes_written(0) {}
 	void write_label(const std::string &name) override;
 	void write_comment(const std::string &name) override;
@@ -280,7 +290,7 @@ struct header
 	 */
 	uint32_t off_dt_struct;
 	/**
-	 * The offset from the start of the blob of the strings table.  
+	 * The offset from the start of the blob of the strings table.
 	 */
 	uint32_t off_dt_strings;
 	/**
@@ -309,7 +319,7 @@ struct header
 	 */
 	uint32_t size_dt_struct;
 	/**
-	 * Writes the entire header to the specified output buffer.  
+	 * Writes the entire header to the specified output buffer.
 	 */
 	void write(output_writer &out);
 	/**
@@ -320,8 +330,7 @@ struct header
 	 * Default constructor.  Initialises the values that have sensible
 	 * defaults, leaves the others blank.
 	 */
-	header() : magic(0xd00dfeed), version(17), last_comp_version(16),
-		boot_cpuid_phys(0) {}
+	header() : magic(0xd00dfeed), version(17), last_comp_version(16), boot_cpuid_phys(0) {}
 };
 
 /**
@@ -332,9 +341,10 @@ struct header
  * Note: We don't currently do suffix matching, which may save a small amount
  * of space.
  */
-class string_table {
+class string_table
+{
 	/**
-	 * Map from strings to their offset. 
+	 * Map from strings to their offset.
 	 */
 	std::map<std::string, uint32_t> string_offsets;
 	/**
@@ -348,7 +358,8 @@ class string_table {
 	 * The current size of the strings section.
 	 */
 	uint32_t size;
-	public:
+
+      public:
 	/**
 	 * Default constructor, creates an empty strings table.
 	 */

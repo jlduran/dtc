@@ -31,18 +31,20 @@
  */
 
 #include "dtb.hh"
-#include <sys/types.h>
+#include <errno.h>
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/types.h>
 #include <unistd.h>
-#include <errno.h>
 
 using std::string;
 
-namespace {
+namespace
+{
 
-void write(dtc::byte_buffer &buffer, int fd)
+void
+write(dtc::byte_buffer &buffer, int fd)
 {
 	size_t size = buffer.size();
 	uint8_t *data = buffer.data();
@@ -68,7 +70,8 @@ namespace dtc
 namespace dtb
 {
 
-void output_writer::write_data(byte_buffer b)
+void
+output_writer::write_data(byte_buffer b)
 {
 	for (auto i : b)
 	{
@@ -136,7 +139,7 @@ asm_writer::write_line(const char *c)
 void
 asm_writer::write_byte(uint8_t b)
 {
-	char out[3] = {0};
+	char out[3] = { 0 };
 	if (byte_count++ == 0)
 	{
 		buffer.push_back('\t');
@@ -170,7 +173,6 @@ asm_writer::write_label(const string &name)
 	push_string(buffer, name);
 	buffer.push_back(':');
 	buffer.push_back('\n');
-	
 }
 
 void
@@ -189,7 +191,6 @@ asm_writer::write_string(const char *c)
 		buffer.push_back((uint8_t)*(c++));
 	}
 }
-
 
 void
 asm_writer::write_string(const string &name)
@@ -290,18 +291,13 @@ header::read_dtb(input_buffer &input)
 	}
 	if (magic != 0xd00dfeed)
 	{
-		fprintf(stderr, "Bad magic token in header.  Got %" PRIx32
-		                " expected 0xd00dfeed\n", magic);
+		fprintf(stderr, "Bad magic token in header.  Got %" PRIx32 " expected 0xd00dfeed\n", magic);
 		return false;
 	}
-	return input.consume_binary(totalsize) &&
-	       input.consume_binary(off_dt_struct) &&
-	       input.consume_binary(off_dt_strings) &&
-	       input.consume_binary(off_mem_rsvmap) &&
-	       input.consume_binary(version) &&
-	       input.consume_binary(last_comp_version) &&
-	       input.consume_binary(boot_cpuid_phys) &&
-	       input.consume_binary(size_dt_strings) &&
+	return input.consume_binary(totalsize) && input.consume_binary(off_dt_struct) &&
+	       input.consume_binary(off_dt_strings) && input.consume_binary(off_mem_rsvmap) &&
+	       input.consume_binary(version) && input.consume_binary(last_comp_version) &&
+	       input.consume_binary(boot_cpuid_phys) && input.consume_binary(size_dt_strings) &&
 	       input.consume_binary(size_dt_struct);
 }
 uint32_t
@@ -338,4 +334,3 @@ string_table::write(dtb::output_writer &writer)
 } // namespace dtb
 
 } // namespace dtc
-

@@ -33,19 +33,19 @@
 #ifndef _FDT_HH_
 #define _FDT_HH_
 #include <algorithm>
-#include <unordered_map>
-#include <unordered_set>
+#include <functional>
 #include <memory>
 #include <string>
-#include <functional>
+#include <unordered_map>
+#include <unordered_set>
 
-#include "util.hh"
 #include "input_buffer.hh"
+#include "util.hh"
 
 namespace dtc
 {
 
-namespace dtb 
+namespace dtb
 {
 struct output_writer;
 class string_table;
@@ -59,11 +59,11 @@ class device_tree;
 /**
  * Type for device tree write functions.
  */
-typedef void (device_tree::* tree_write_fn_ptr)(int);
+typedef void (device_tree::*tree_write_fn_ptr)(int);
 /**
  * Type for device tree read functions.
  */
-typedef void (device_tree::* tree_read_fn_ptr)(const std::string &, FILE *);
+typedef void (device_tree::*tree_read_fn_ptr)(const std::string &, FILE *);
 /**
  * Type for (owned) pointers to properties.
  */
@@ -157,21 +157,24 @@ struct property_value
 	/**
 	 * Returns true if this value is a cross reference, false otherwise.
 	 */
-	inline bool is_cross_reference()
+	inline bool
+	is_cross_reference()
 	{
 		return is_type(CROSS_REFERENCE);
 	}
 	/**
 	 * Returns true if this value is a phandle reference, false otherwise.
 	 */
-	inline bool is_phandle()
+	inline bool
+	is_phandle()
 	{
 		return is_type(PHANDLE);
 	}
 	/**
 	 * Returns true if this value is a string, false otherwise.
 	 */
-	inline bool is_string()
+	inline bool
+	is_string()
 	{
 		return is_type(STRING);
 	}
@@ -179,14 +182,16 @@ struct property_value
 	 * Returns true if this value is a string list (a nul-separated
 	 * sequence of strings), false otherwise.
 	 */
-	inline bool is_string_list()
+	inline bool
+	is_string_list()
 	{
 		return is_type(STRING_LIST);
 	}
 	/**
 	 * Returns true if this value is binary, false otherwise.
 	 */
-	inline bool is_binary()
+	inline bool
+	is_binary()
 	{
 		return is_type(BINARY);
 	}
@@ -200,7 +205,7 @@ struct property_value
 	/**
 	 * Default constructor, specifying the label of the value.
 	 */
-	property_value(std::string l=std::string()) : label(l), type(UNKNOWN) {}
+	property_value(std::string l = std::string()) : label(l), type(UNKNOWN) {}
 	/**
 	 * Writes the data for this value into an output buffer.
 	 */
@@ -225,12 +230,14 @@ struct property_value
 	 * Returns the size (in bytes) of this property value.
 	 */
 	size_t size();
-	private:
+
+      private:
 	/**
 	 * Returns whether the value is of the specified type.  If the type of
 	 * the value has not yet been determined, then this calculates it.
 	 */
-	inline bool is_type(value_type v)
+	inline bool
+	is_type(value_type v)
 	{
 		if (type == UNKNOWN)
 		{
@@ -315,41 +322,32 @@ class property
 	 */
 	property(input_buffer &structs, input_buffer &strings);
 	/**
-	 * Parses a new property from the input buffer.  
+	 * Parses a new property from the input buffer.
 	 */
-	property(text_input_buffer &input,
-	         std::string &&k,
-	         string_set &&l,
-	         bool terminated,
-	         define_map *defines);
-	public:
+	property(text_input_buffer &input, std::string &&k, string_set &&l, bool terminated, define_map *defines);
+
+      public:
 	/**
 	 * Creates an empty property.
 	 */
-	property(std::string &&k, string_set &&l=string_set())
-		: key(k), labels(l), valid(true) {}
+	property(std::string &&k, string_set &&l = string_set()) : key(k), labels(l), valid(true) {}
 	/**
 	 * Copy constructor.
 	 */
-	property(property &p) : key(p.key), labels(p.labels), values(p.values),
-		valid(p.valid) {}
+	property(property &p) : key(p.key), labels(p.labels), values(p.values), valid(p.valid) {}
 	/**
 	 * Factory method for constructing a new property.  Attempts to parse a
 	 * property from the input, and returns it on success.  On any parse
 	 * error, this will return 0.
 	 */
-	static property_ptr parse_dtb(input_buffer &structs,
-	                              input_buffer &strings);
+	static property_ptr parse_dtb(input_buffer &structs, input_buffer &strings);
 	/**
 	 * Factory method for constructing a new property.  Attempts to parse a
 	 * property from the input, and returns it on success.  On any parse
 	 * error, this will return 0.
 	 */
-	static property_ptr parse(text_input_buffer &input,
-	                          std::string &&key,
-	                          string_set &&labels=string_set(),
-	                          bool semicolonTerminated=true,
-	                          define_map *defines=0);
+	static property_ptr parse(text_input_buffer &input, std::string &&key, string_set &&labels = string_set(),
+	    bool semicolonTerminated = true, define_map *defines = 0);
 	/**
 	 * Iterator type used for accessing the values of a property.
 	 */
@@ -357,28 +355,32 @@ class property
 	/**
 	 * Returns an iterator referring to the first value in this property.
 	 */
-	inline value_iterator begin()
+	inline value_iterator
+	begin()
 	{
 		return values.begin();
 	}
 	/**
 	 * Returns an iterator referring to the last value in this property.
 	 */
-	inline value_iterator end()
+	inline value_iterator
+	end()
 	{
 		return values.end();
 	}
 	/**
 	 * Adds a new value to an existing property.
 	 */
-	inline void add_value(property_value v)
+	inline void
+	add_value(property_value v)
 	{
 		values.push_back(v);
 	}
 	/**
 	 * Returns the key for this property.
 	 */
-	inline const std::string &get_key()
+	inline const std::string &
+	get_key()
 	{
 		return key;
 	}
@@ -406,7 +408,7 @@ class property
  */
 class node
 {
-	public:
+      public:
 	/**
 	 * The labels for this node, if any.  Node labels are used as the
 	 * targets for cross references.
@@ -463,16 +465,26 @@ class node
 		 */
 		VISIT_BREAK
 	};
-	private:
+
+      private:
 	/**
 	 * Adaptor to use children in range-based for loops.
 	 */
 	struct child_range
 	{
 		child_range(node &nd) : n(nd) {}
-		child_iterator begin() { return n.child_begin(); }
-		child_iterator end() { return n.child_end(); }
-		private:
+		child_iterator
+		begin()
+		{
+			return n.child_begin();
+		}
+		child_iterator
+		end()
+		{
+			return n.child_end();
+		}
+
+	      private:
 		node &n;
 	};
 	/**
@@ -481,9 +493,18 @@ class node
 	struct property_range
 	{
 		property_range(node &nd) : n(nd) {}
-		property_vector::iterator begin() { return n.property_begin(); }
-		property_vector::iterator end() { return n.property_end(); }
-		private:
+		property_vector::iterator
+		begin()
+		{
+			return n.property_begin();
+		}
+		property_vector::iterator
+		end()
+		{
+			return n.property_end();
+		}
+
+	      private:
 		node &n;
 	};
 	/**
@@ -509,11 +530,9 @@ class node
 	bool valid;
 	/**
 	 * Parses a name inside a node, writing the string passed as the last
-	 * argument as an error if it fails.  
+	 * argument as an error if it fails.
 	 */
-	std::string parse_name(text_input_buffer &input,
-	                       bool &is_property,
-	                       const char *error);
+	std::string parse_name(text_input_buffer &input, bool &is_property, const char *error);
 	/**
 	 * Constructs a new node from two input buffers, pointing to the struct
 	 * and strings tables in the device tree blob, respectively.
@@ -525,12 +544,8 @@ class node
 	 * node.  The name, and optionally label and unit address, should have
 	 * already been parsed.
 	 */
-	node(text_input_buffer &input,
-	     device_tree &tree,
-	     std::string &&n,
-	     std::unordered_set<std::string> &&l,
-	     std::string &&a,
-	     define_map*);
+	node(text_input_buffer &input, device_tree &tree, std::string &&n, std::unordered_set<std::string> &&l,
+	    std::string &&a, define_map *);
 	/**
 	 * Creates a special node with the specified name and properties.
 	 */
@@ -540,18 +555,19 @@ class node
 	 * vector.  Orders the properties based on their names.
 	 */
 	static inline bool cmp_properties(property_ptr &p1, property_ptr &p2);
-		/*
-	{
-		return p1->get_key() < p2->get_key();
-	}
-	*/
+	/*
+{
+	return p1->get_key() < p2->get_key();
+}
+*/
 	/**
 	 * Comparison function for nodes, used when sorting the children
 	 * vector.  Orders the nodes based on their names or, if the names are
 	 * the same, by the unit addresses.
 	 */
 	static inline bool cmp_children(node_ptr &c1, node_ptr &c2);
-	public:
+
+      public:
 	/**
 	 * Sorts the node's properties and children into alphabetical order and
 	 * recursively sorts the children.
@@ -560,14 +576,16 @@ class node
 	/**
 	 * Returns an iterator for the first child of this node.
 	 */
-	inline child_iterator child_begin()
+	inline child_iterator
+	child_begin()
 	{
 		return children.begin();
 	}
 	/**
 	 * Returns an iterator after the last child of this node.
 	 */
-	inline child_iterator child_end()
+	inline child_iterator
+	child_end()
 	{
 		return children.end();
 	}
@@ -575,21 +593,24 @@ class node
 	 * Returns a range suitable for use in a range-based for loop describing
 	 * the children of this node.
 	 */
-	inline child_range child_nodes()
+	inline child_range
+	child_nodes()
 	{
 		return child_range(*this);
 	}
 	/**
 	 * Accessor for the deleted children.
 	 */
-	inline const std::unordered_set<std::string> &deleted_child_nodes()
+	inline const std::unordered_set<std::string> &
+	deleted_child_nodes()
 	{
 		return deleted_children;
 	}
 	/**
 	 * Accessor for the deleted properties
 	 */
-	inline const std::unordered_set<std::string> &deleted_properties()
+	inline const std::unordered_set<std::string> &
+	deleted_properties()
 	{
 		return deleted_props;
 	}
@@ -597,21 +618,24 @@ class node
 	 * Returns a range suitable for use in a range-based for loop describing
 	 * the properties of this node.
 	 */
-	inline property_range properties()
+	inline property_range
+	properties()
 	{
 		return property_range(*this);
 	}
 	/**
 	 * Returns an iterator after the last property of this node.
 	 */
-	inline property_vector::iterator property_begin()
+	inline property_vector::iterator
+	property_begin()
 	{
 		return props.begin();
 	}
 	/**
 	 * Returns an iterator for the first property of this node.
 	 */
-	inline property_vector::iterator property_end()
+	inline property_vector::iterator
+	property_end()
 	{
 		return props.end();
 	}
@@ -622,12 +646,9 @@ class node
 	 * cursor on the open brace of the property, after the name and so on
 	 * have been parsed.
 	 */
-	static node_ptr parse(text_input_buffer &input,
-	                      device_tree &tree,
-	                      std::string &&name,
-	                      std::unordered_set<std::string> &&label=std::unordered_set<std::string>(),
-	                      std::string &&address=std::string(),
-	                      define_map *defines=0);
+	static node_ptr parse(text_input_buffer &input, device_tree &tree, std::string &&name,
+	    std::unordered_set<std::string> &&label = std::unordered_set<std::string>(),
+	    std::string &&address = std::string(), define_map *defines = 0);
 	/**
 	 * Factory method for constructing a new node.  Attempts to parse a
 	 * node in DTB format from the input, and returns it on success.  On
@@ -639,8 +660,7 @@ class node
 	/**
 	 * Construct a new special node from a name and set of properties.
 	 */
-	static node_ptr create_special_node(const std::string &name,
-			const std::vector<property_ptr> &props);
+	static node_ptr create_special_node(const std::string &name, const std::vector<property_ptr> &props);
 	/**
 	 * Returns a property corresponding to the specified key, or 0 if this
 	 * node does not contain a property of that name.
@@ -649,21 +669,24 @@ class node
 	/**
 	 * Adds a new property to this node.
 	 */
-	inline void add_property(property_ptr &p)
+	inline void
+	add_property(property_ptr &p)
 	{
 		props.push_back(p);
 	}
 	/**
 	 * Adds a new child to this node.
 	 */
-	inline void add_child(node_ptr &&n)
+	inline void
+	add_child(node_ptr &&n)
 	{
 		children.push_back(std::move(n));
 	}
 	/**
 	 * Deletes any children from this node.
 	 */
-	inline void delete_children_if(std::function<bool(node_ptr &)> predicate)
+	inline void
+	delete_children_if(std::function<bool(node_ptr &)> predicate)
 	{
 		children.erase(std::remove_if(children.begin(), children.end(), predicate), children.end());
 	}
@@ -682,7 +705,7 @@ class node
 	/**
 	 * Writes the current node as DTS to the specified file.  The second
 	 * parameter is the indent level.  This function will start every line
-	 * with this number of tabs.  
+	 * with this number of tabs.
 	 */
 	void write_dts(FILE *file, int indent);
 	/**
@@ -692,7 +715,7 @@ class node
 	 * not recurse into the current node's children, or VISIT_RECURSE to recurse
 	 * through children as expected.  parent will be passed to the callable.
 	 */
-	visit_behavior visit(std::function<visit_behavior(node&, node*)>, node *parent);
+	visit_behavior visit(std::function<visit_behavior(node &, node *)>, node *parent);
 };
 
 /**
@@ -702,14 +725,14 @@ class node
  */
 class device_tree
 {
-	public:
+      public:
 	/**
 	 * Type used for node paths.  A node path is sequence of names and unit
 	 * addresses.
 	 */
-	class node_path : public std::vector<std::pair<std::string,std::string>>
+	class node_path : public std::vector<std::pair<std::string, std::string>>
 	{
-		public:
+	      public:
 		/**
 		 * Converts this to a string representation.
 		 */
@@ -727,14 +750,15 @@ class device_tree
 		/** Create both nodes. */
 		BOTH
 	};
-	private:
+
+      private:
 	/**
 	 * The format that we should use for writing phandles.
 	 */
 	phandle_format phandle_node_name = EPAPR;
 	/**
 	 * Flag indicating that this tree is valid.  This will be set to false
-	 * on parse errors. 
+	 * on parse errors.
 	 */
 	bool valid = true;
 	/**
@@ -782,7 +806,7 @@ class device_tree
 	 * A collection of property values that are references to other nodes.
 	 * These should be expanded to the full path of their targets.
 	 */
-	std::vector<property_value*> cross_references;
+	std::vector<property_value *> cross_references;
 	/**
 	 * Labels collected from top-level /delete-node/ directives.
 	 */
@@ -813,7 +837,7 @@ class device_tree
 	std::vector<fixup> fixups;
 	/**
 	 * The locations of all of the values that are supposed to become phandle
-	 * references, but refer to things outside of this file.  
+	 * references, but refer to things outside of this file.
 	 */
 	std::vector<std::reference_wrapper<fixup>> unresolved_fixups;
 	/**
@@ -823,7 +847,7 @@ class device_tree
 	/**
 	 * A collection of input buffers that we are using.  These input
 	 * buffers are the ones that own their memory, and so we must preserve
-	 * them for the lifetime of the device tree.  
+	 * them for the lifetime of the device tree.
 	 */
 	std::vector<std::unique_ptr<input_buffer>> buffers;
 	/**
@@ -845,7 +869,7 @@ class device_tree
 	/**
 	 * Dictionary of predefined macros provided on the command line.
 	 */
-	define_map               defines;
+	define_map defines;
 	/**
 	 * The default boot CPU, specified in the device tree header.
 	 */
@@ -870,7 +894,7 @@ class device_tree
 	 * Visit all of the nodes recursively, and if they have labels then add
 	 * them to the node_paths and node_names vectors so that they can be
 	 * used in resolving cross references.  Also collects phandle
-	 * properties that have been explicitly added.  
+	 * properties that have been explicitly added.
 	 */
 	void collect_names_recursive(node_ptr parent, node_ptr n, node_path &path);
 	/**
@@ -913,16 +937,14 @@ class device_tree
 	 * already been read.  Some dts files place the header in an include,
 	 * rather than in the top-level file.
 	 */
-	void parse_file(text_input_buffer &input,
-	                std::vector<node_ptr> &roots,
-	                bool &read_header);
+	void parse_file(text_input_buffer &input, std::vector<node_ptr> &roots, bool &read_header);
 	/**
 	 * Template function that writes a dtb blob using the specified writer.
 	 * The writer defines the output format (assembly, blob).
 	 */
-	template<class writer>
-	void write(int fd);
-	public:
+	template <class writer> void write(int fd);
+
+      public:
 	/**
 	 * Should we write the __symbols__ node (to allow overlays to be linked
 	 * against this blob)?
@@ -931,7 +953,7 @@ class device_tree
 	/**
 	 * Returns the node referenced by the property.  If this is a tree that
 	 * is in source form, then we have a string that we can use to index
-	 * the cross_references array and so we can just look that up.  
+	 * the cross_references array and so we can just look that up.
 	 */
 	node_ptr referenced_node(property_value &v);
 	/**
@@ -985,7 +1007,8 @@ class device_tree
 	/**
 	 * Returns whether this tree is valid.
 	 */
-	inline bool is_valid()
+	inline bool
+	is_valid()
 	{
 		return valid;
 	}
@@ -993,14 +1016,16 @@ class device_tree
 	 * Mark this tree as needing garbage collection, because an /omit-if-no-ref/
 	 * node has been encountered.
 	 */
-	void set_needs_garbage_collection()
+	void
+	set_needs_garbage_collection()
 	{
 		garbage_collect = true;
 	}
 	/**
 	 * Sets the format for writing phandle properties.
 	 */
-	inline void set_phandle_format(phandle_format f)
+	inline void
+	set_phandle_format(phandle_format f)
 	{
 		phandle_node_name = f;
 	}
@@ -1008,21 +1033,24 @@ class device_tree
 	 * Returns a pointer to the root node of this tree.  No ownership
 	 * transfer.
 	 */
-	inline const node_ptr &get_root() const
+	inline const node_ptr &
+	get_root() const
 	{
 		return root;
 	}
 	/**
 	 * Sets the physical boot CPU.
 	 */
-	void set_boot_cpu(uint32_t cpu)
+	void
+	set_boot_cpu(uint32_t cpu)
 	{
 		boot_cpu = cpu;
 	}
 	/**
 	 * Sorts the tree.  Useful for debugging device trees.
 	 */
-	void sort()
+	void
+	sort()
 	{
 		if (root)
 		{
@@ -1035,7 +1063,8 @@ class device_tree
 	 * a pointer to this string, but does not own it: the caller is
 	 * responsible for freeing it if required.
 	 */
-	void add_include_path(const char *path)
+	void
+	add_include_path(const char *path)
 	{
 		std::string p(path);
 		include_paths.push_back(std::move(p));
@@ -1043,21 +1072,24 @@ class device_tree
 	/**
 	 * Sets the number of empty reserve map entries to add.
 	 */
-	void set_empty_reserve_map_entries(uint32_t e)
+	void
+	set_empty_reserve_map_entries(uint32_t e)
 	{
 		spare_reserve_map_entries = e;
 	}
 	/**
 	 * Sets the minimum size, in bytes, of the blob.
 	 */
-	void set_blob_minimum_size(uint32_t s)
+	void
+	set_blob_minimum_size(uint32_t s)
 	{
 		minimum_blob_size = s;
 	}
 	/**
 	 * Sets the amount of padding to add to the blob.
 	 */
-	void set_blob_padding(uint32_t p)
+	void
+	set_blob_padding(uint32_t p)
 	{
 		blob_padding = p;
 	}

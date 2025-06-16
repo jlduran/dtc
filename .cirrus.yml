@@ -1,17 +1,18 @@
+---
 freebsd_instance:
   image: freebsd-13-2-release-amd64
 
-task:
+build_task:
   name: "Build and test"
   install_script: pkg install -y cmake ninja
   script: |
-      mkdir Build
-      cd Build
-      cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Debug
-      ninja
-      ctest -j4
+    mkdir Build
+    cd Build
+    cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Debug
+    ninja
+    ctest -j4
 
-task:
+lint_task:
   name: "Lint man page"
   script: |
-      mandoc -T lint dtc.1
+    mandoc -T lint dtc.1

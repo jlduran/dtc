@@ -30,25 +30,25 @@
  * SUCH DAMAGE.
  */
 
-#include <sys/resource.h>
 #include <fcntl.h>
 #include <libgen.h>
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/resource.h>
 #include <time.h>
 #include <unistd.h>
 
-
-#include "fdt.hh"
 #include "checking.hh"
+#include "fdt.hh"
 #include "util.hh"
 
 using namespace dtc;
 using std::string;
 
-namespace {
+namespace
+{
 
 /**
  * The current major version of the tool.
@@ -66,34 +66,36 @@ int version_minor_compatible = 4;
 int version_patch = 0;
 int version_patch_compatible = 7;
 
-void usage(const string &argv0)
+void
+usage(const string &argv0)
 {
-	fprintf(stderr, "Usage:\n"
-		"\t%s\t[-fhsv@] [-b boot_cpu_id] [-d dependency_file]"
-			"[-E [no-]checker_name]\n"
-		"\t\t[-H phandle_format] [-I input_format]"
-			"[-O output_format]\n"
-		"\t\t[-o output_file] [-R entries] [-S bytes] [-p bytes]"
-			"[-V blob_version]\n"
-		"\t\t-W [no-]checker_name] input_file\n", basename(argv0).c_str());
+	fprintf(stderr,
+	    "Usage:\n"
+	    "\t%s\t[-fhsv@] [-b boot_cpu_id] [-d dependency_file]"
+	    "[-E [no-]checker_name]\n"
+	    "\t\t[-H phandle_format] [-I input_format]"
+	    "[-O output_format]\n"
+	    "\t\t[-o output_file] [-R entries] [-S bytes] [-p bytes]"
+	    "[-V blob_version]\n"
+	    "\t\t-W [no-]checker_name] input_file\n",
+	    basename(argv0).c_str());
 }
 
 /**
  * Prints the current version of this program..
  */
-void version(const char* progname)
+void
+version(const char *progname)
 {
-	fprintf(stdout, "Version: %s %d.%d.%d compatible with gpl dtc %d.%d.%d\n", progname,
-		version_major, version_minor, version_patch,
-		version_major_compatible, version_minor_compatible,
-		version_patch_compatible);
+	fprintf(stdout, "Version: %s %d.%d.%d compatible with gpl dtc %d.%d.%d\n", progname, version_major,
+	    version_minor, version_patch, version_major_compatible, version_minor_compatible, version_patch_compatible);
 }
 
 } // Anonymous namespace
 
 using fdt::device_tree;
-using fdt::tree_write_fn_ptr;
 using fdt::tree_read_fn_ptr;
+using fdt::tree_write_fn_ptr;
 
 int
 main(int argc, char **argv)
@@ -259,10 +261,11 @@ main(int argc, char **argv)
 			string arg(optarg);
 			if ((arg.size() > 3) && (strncmp(optarg, "no-", 3) == 0))
 			{
-				arg = string(optarg+3);
+				arg = string(optarg + 3);
 				if (!checks.disable_checker(arg))
 				{
-					fprintf(stderr, "Checker %s either does not exist or is already disabled\n", optarg+3);
+					fprintf(stderr, "Checker %s either does not exist or is already disabled\n",
+					    optarg + 3);
 				}
 				break;
 			}
@@ -297,12 +300,11 @@ main(int argc, char **argv)
 		case 'P':
 			if (!tree.parse_define(optarg))
 			{
-				fprintf(stderr, "Invalid predefine value %s\n",
-				        optarg);
+				fprintf(stderr, "Invalid predefine value %s\n", optarg);
 			}
 			break;
 		default:
-			/* 
+			/*
 			 * Since opterr is non-zero, getopt will have
 			 * already printed an error message.
 			 */
@@ -364,19 +366,13 @@ main(int argc, char **argv)
 
 		getrusage(RUSAGE_SELF, &r);
 		fprintf(stderr, "Peak memory usage: %ld bytes\n", r.ru_maxrss);
-		fprintf(stderr, "Setup and option parsing took %f seconds\n",
-				((double)(c1-c0))/CLOCKS_PER_SEC);
-		fprintf(stderr, "Parsing took %f seconds\n",
-				((double)(c2-c1))/CLOCKS_PER_SEC);
-		fprintf(stderr, "Checking took %f seconds\n",
-				((double)(c3-c2))/CLOCKS_PER_SEC);
-		fprintf(stderr, "Generating output took %f seconds\n",
-				((double)(c4-c3))/CLOCKS_PER_SEC);
-		fprintf(stderr, "Total time: %f seconds\n",
-				((double)(c4-c0))/CLOCKS_PER_SEC);
+		fprintf(stderr, "Setup and option parsing took %f seconds\n", ((double)(c1 - c0)) / CLOCKS_PER_SEC);
+		fprintf(stderr, "Parsing took %f seconds\n", ((double)(c2 - c1)) / CLOCKS_PER_SEC);
+		fprintf(stderr, "Checking took %f seconds\n", ((double)(c3 - c2)) / CLOCKS_PER_SEC);
+		fprintf(stderr, "Generating output took %f seconds\n", ((double)(c4 - c3)) / CLOCKS_PER_SEC);
+		fprintf(stderr, "Total time: %f seconds\n", ((double)(c4 - c0)) / CLOCKS_PER_SEC);
 		// This is not needed, but keeps valgrind quiet.
 		fclose(stdin);
 	}
 	return EXIT_SUCCESS;
 }
-
